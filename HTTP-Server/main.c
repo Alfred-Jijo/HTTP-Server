@@ -41,19 +41,38 @@
 		(buf)[j] = '\0';                           \
 	} while(0)
 
+void putIResult(HANDLE handle, const char *const sValue, int iResult, char *sResult) {
+	Atoi(iResult, sResult);
+	WriteConsoleA(handle, sValue, (DWORD)lstrlenA(sValue), NULL, NULL);
+	WriteConsoleA(handle, sResult, (DWORD)lstrlenA(sResult), NULL, NULL);
+	WriteConsoleA(handle, "\n", (DWORD)lstrlenA("\n"), NULL, NULL);
+}
 
 int __cdecl main(void) {
 	WSADATA wsaData;
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	int iResult;
+	char *sResult = "";
 
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if ( iResult != 0 ) {
-		char *sResult = "";
-		Atoi(iResult, sResult);
-		WriteConsoleA(handle, "WSAStartup Failed: ", (DWORD)lstrlenA("WSAStartup Failed: "), NULL, NULL);
-		WriteConsoleA(handle, sResult, (DWORD)lstrlenA(sResult), NULL, NULL);
-		WriteConsoleA(handle, "\n", (DWORD)lstrlenA("\n"), NULL, NULL);
+		putIResult(handle, "WSAStartup failed: ", iResult, sResult);
+		return 1;
+	}
+
+#define DEFAULT_PORT "27015"
+
+	struct addrinfo *result = NULL, *ptr = NULL, hints;
+
+	ZeroMemory(&hints, sizeof(hints));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_flags = AI_PASSIVE;
+
+	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+	if (iResult != 0) {
+		putIResult(handle, "getaddrinfo failed: ", iResult, sResult);
 	}
 
 	return 0;
