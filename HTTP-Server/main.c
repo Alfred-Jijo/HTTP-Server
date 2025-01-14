@@ -14,32 +14,32 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 #define Atoi(val, buf)                                     \
-    do {                                                   \
-	int v = (val);                                     \
-	int isNeg = 0;                                     \
-	char tmp[12];                                      \
-	int i = 0, j;                                      \
-	if (v == 0) {                                      \
-	    (buf)[0] = '0';                                \
-	    (buf)[1] = '\0';                               \
-	    break;                                         \
-	}                                                  \
-	if (v < 0) {                                       \
-	    isNeg = 1;                                     \
-	    v = -v;                                        \
-	}                                                  \
-	while (v != 0) {                                   \
-	    tmp[i++] = (v % 10) + '0';                    \
-	    v /= 10;                                       \
-	}                                                  \
-	if (isNeg) {                                       \
-	    tmp[i++] = '-';                                \
-	}                                                  \
-	for (j = 0; j < i; ++j) {                         \
-	    (buf)[j] = tmp[i - j - 1];                    \
-	}                                                  \
-	(buf)[j] = '\0';                                   \
-    } while(0)
+	do {                                               \
+		int v = (val);                             \
+		int isNeg = 0;                             \
+		char tmp[12];                              \
+		int i = 0, j;                              \
+		if (v == 0) {                              \
+			(buf)[0] = '0';                    \
+			(buf)[1] = '\0';                   \
+			break;                             \
+		}					   \
+		if (v < 0) {                               \
+			isNeg = 1;                         \
+			v = -v;                            \
+		}                                          \
+		while (v != 0) {                           \
+			tmp[i++] = (v % 10) + '0';         \
+			v /= 10;                           \
+		}                                          \
+		if (isNeg) {                               \
+			tmp[i++] = '-';                    \
+		}                                          \
+		for (j = 0; j < i; ++j) {                  \
+			(buf)[j] = tmp[i - j - 1];         \
+		}                                          \
+		(buf)[j] = '\0';                           \
+	} while(0)
 
 
 int __cdecl main(void) {
