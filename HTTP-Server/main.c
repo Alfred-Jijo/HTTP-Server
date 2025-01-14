@@ -41,14 +41,14 @@
 		(buf)[j] = '\0';                           \
 	} while(0)
 
-void putIResult(HANDLE handle, const char *const sValue, int iResult, char *sResult) {
+static void putIResult(HANDLE handle, const char *const sValue, int iResult, char *sResult) {
 	Atoi(iResult, sResult);
 	WriteConsoleA(handle, sValue, (DWORD)lstrlenA(sValue), NULL, NULL);
 	WriteConsoleA(handle, sResult, (DWORD)lstrlenA(sResult), NULL, NULL);
 	WriteConsoleA(handle, "\n", (DWORD)lstrlenA("\n"), NULL, NULL);
 }
 
-int __cdecl main(void) {
+int main(void) {
 	WSADATA wsaData;
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	int iResult;
@@ -75,5 +75,11 @@ int __cdecl main(void) {
 		putIResult(handle, "getaddrinfo failed: ", iResult, sResult);
 	}
 
+	WriteConsoleA(handle, "Hello, World!\n", (DWORD)lstrlenA("Hello, World!\n"), NULL, NULL);
 	return 0;
+}
+
+void programStart(void) {
+	int res = main();
+	ExitProcess(res);
 }
