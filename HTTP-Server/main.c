@@ -41,11 +41,21 @@
 		(buf)[j] = '\0';                           \
 	} while(0)
 
-static void putIResult(HANDLE handle, const char *const sValue, int iResult, char *sResult) {
+static void handleiResult(HANDLE handle, const char *const sValue, int iResult, char *sResult) {
 	Atoi(iResult, sResult);
 	WriteConsoleA(handle, sValue, (DWORD)lstrlenA(sValue), NULL, NULL);
 	WriteConsoleA(handle, sResult, (DWORD)lstrlenA(sResult), NULL, NULL);
 	WriteConsoleA(handle, "\n", (DWORD)lstrlenA("\n"), NULL, NULL);
+}
+
+static void printErrorMessage(const char *message, DWORD errorCode) {
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (handle != INVALID_HANDLE_VALUE) {
+		char buffer[256];
+		DWORD bytesWritten;
+		int len = wsprintfA(buffer, "%s %lu\n", message, errorCode);
+		WriteConsoleA(handle, buffer, len, &bytesWritten, NULL);
+	}
 }
 
 int main(void) {
@@ -55,8 +65,8 @@ int main(void) {
 	char *sResult = "";
 
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if ( iResult != 0 ) {
-		putIResult(handle, "WSAStartup failed: ", iResult, sResult);
+	if (iResult != 0) {
+		handleiResult(handle, "WSAStartup failed: ", iResult, sResult);
 		return 1;
 	}
 
@@ -72,14 +82,37 @@ int main(void) {
 
 	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
 	if (iResult != 0) {
-		putIResult(handle, "getaddrinfo failed: ", iResult, sResult);
+		handleiResult(handle, "getaddrinfo failed: ", iResult, sResult);
 	}
 
+	SOCKET ListenSocket = INVALID_SOCKET;
+	
+	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+
+	if (ListenSocket == INVALID_SOCKET) {
+		printErrorMessage("Error at socket():", WSAGetLastError());
+		freeaddrinfo(result);
+		WSACleanup();
+		return 1;
+	}
+
+	iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+	if (iResult == SOCKET_ERROR) {
+		printErrorMessage("bind failed with error:", WSAGetLastError);
+		freeaddrinfo(result);
+		closesocket(ListenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+#ifdef _DEBUG
 	WriteConsoleA(handle, "Hello, World!\n", (DWORD)lstrlenA("Hello, World!\n"), NULL, NULL);
+#endif
+
 	return 0;
 }
 
-void programStart(void) {
+static void programStart(void) {
 	int res = main();
 	ExitProcess(res);
 }
