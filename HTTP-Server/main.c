@@ -11,6 +11,8 @@
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 
+#include "Win32_stdint.h"
+
 #pragma comment(lib, "Ws2_32.lib")
 
 #define Atoi(val, buf)                                     \
@@ -41,27 +43,14 @@
 		(buf)[j] = '\0';                           \
 	} while(0)
 
-static void handleiResult(HANDLE handle, const char *const sValue, int iResult, char *sResult) {
-	Atoi(iResult, sResult);
-	WriteConsoleA(handle, sValue, (DWORD)lstrlenA(sValue), NULL, NULL);
-	WriteConsoleA(handle, sResult, (DWORD)lstrlenA(sResult), NULL, NULL);
-	WriteConsoleA(handle, "\n", (DWORD)lstrlenA("\n"), NULL, NULL);
-}
 
-static void printErrorMessage(const char *message, DWORD errorCode) {
-	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (handle != INVALID_HANDLE_VALUE) {
-		char buffer[256];
-		DWORD bytesWritten;
-		int len = wsprintfA(buffer, "%s %lu\n", message, errorCode);
-		WriteConsoleA(handle, buffer, len, &bytesWritten, NULL);
-	}
-}
+static void handleiResult(HANDLE handle, const char *const sValue, int iResult, char *sResult);
+static void printErrorMessage(const char *message, DWORD errorCode);
 
 int main(void) {
 	WSADATA wsaData;
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	int iResult;
+	int8 iResult;
 	char *sResult = "";
 
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -106,13 +95,30 @@ int main(void) {
 	}
 
 #ifdef _DEBUG
-	WriteConsoleA(handle, "Hello, World!\n", (DWORD)lstrlenA("Hello, World!\n"), NULL, NULL);
+	WriteConsoleA(handle, "[DEBUG] BUILD\n", (DWORD)lstrlenA("Hello, World!\n"), NULL, NULL);
 #endif
 
 	return 0;
 }
 
+static void handleiResult(HANDLE handle, const char *const sValue, int iResult, char *sResult) {
+	Atoi(iResult, sResult);
+	WriteConsoleA(handle, sValue, (DWORD)lstrlenA(sValue), NULL, NULL);
+	WriteConsoleA(handle, sResult, (DWORD)lstrlenA(sResult), NULL, NULL);
+	WriteConsoleA(handle, "\n", (DWORD)lstrlenA("\n"), NULL, NULL);
+}
+
+static void printErrorMessage(const char *message, DWORD errorCode) {
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (handle != INVALID_HANDLE_VALUE) {
+		char buffer[256];
+		DWORD bytesWritten;
+		int len = wsprintfA(buffer, "%s %lu\n", message, errorCode);
+		WriteConsoleA(handle, buffer, len, &bytesWritten, NULL);
+	}
+}
+
 static void programStart(void) {
-	int res = main();
-	ExitProcess(res);
+	int8 ExitCode = main();
+	ExitProcess(ExitCode);
 }
