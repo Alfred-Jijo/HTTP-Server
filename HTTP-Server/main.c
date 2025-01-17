@@ -95,7 +95,7 @@ int main(void) {
 	}
 
 #ifdef _DEBUG
-	WriteConsoleA(handle, "[DEBUG] BUILD\n", (DWORD)lstrlenA("Hello, World!\n"), NULL, NULL);
+	WriteConsoleA(handle, "[DEBUG] BUILD\n", (DWORD)lstrlenA("[DEBUG] BUILD\n"), NULL, NULL);
 #endif
 
 	return 0;
@@ -118,7 +118,19 @@ static void printErrorMessage(const char *message, DWORD errorCode) {
 	}
 }
 
+static int memcmp_nocrt(const void *ptr1, const void *ptr2, SIZE_T num) {
+	const unsigned char *p1 = (const unsigned char *)ptr1;
+	const unsigned char *p2 = (const unsigned char *)ptr2;
+
+	for (SIZE_T i = 0; i < num; i++) {
+		if (p1[i] != p2[i]) {
+			return p1[i] - p2[i];
+		}
+	}
+	return 0;
+}
+
 static void programStart(void) {
-	int8 ExitCode = main();
+	int ExitCode = main();
 	ExitProcess(ExitCode);
 }
