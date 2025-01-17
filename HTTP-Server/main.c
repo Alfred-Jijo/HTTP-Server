@@ -118,6 +118,7 @@ static void printErrorMessage(const char *message, DWORD errorCode) {
 	}
 }
 
+#define memcmp(a, b, c) memcmp_nocrt(a, b, c)
 static int memcmp_nocrt(const void *ptr1, const void *ptr2, SIZE_T num) {
 	const unsigned char *p1 = (const unsigned char *)ptr1;
 	const unsigned char *p2 = (const unsigned char *)ptr2;
