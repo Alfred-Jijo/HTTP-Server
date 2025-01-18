@@ -16,39 +16,9 @@ typedef UINT32  uint32;
 typedef INT64   int64;
 typedef UINT64  uint64;
 
-/* Minimum-width integer types */
-typedef INT8    int_least8_t;
-typedef UINT8   uint_least8_t;
-
-typedef INT16   int_least16_t;
-typedef UINT16  uint_least16_t;
-
-typedef INT32   int_least32_t;
-typedef UINT32  uint_least32_t;
-
-typedef INT64   int_least64_t;
-typedef UINT64  uint_least64_t;
-
-/* Fastest minimum-width integer types */
-typedef INT8    int_fast8_t;
-typedef UINT8   uint_fast8_t;
-
-typedef INT16   int_fast16_t;
-typedef UINT16  uint_fast16_t;
-
-typedef INT32   int_fast32_t;
-typedef UINT32  uint_fast32_t;
-
-typedef INT64   int_fast64_t;
-typedef UINT64  uint_fast64_t;
-
 /* Pointer-sized integer types */
 typedef INT_PTR   intptr_t;
 typedef UINT_PTR  uintptr_t;
-
-/* Greatest-width integer types */
-typedef INT64   intmax_t;
-typedef UINT64  uintmax_t;
 
 /* Limits for exact-width integer types */
 #define INT8_MIN    (-128)

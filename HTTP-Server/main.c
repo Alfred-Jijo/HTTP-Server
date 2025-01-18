@@ -15,6 +15,9 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE 1
+
 #define Atoi(val, buf)                                     \
 	do {                                               \
 		int v = (val);                             \
@@ -48,15 +51,21 @@ static void handleiResult(HANDLE handle, const char *const sValue, int iResult, 
 static void printErrorMessage(const char *message, DWORD errorCode);
 
 int main(void) {
+
 	WSADATA wsaData;
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	int8 iResult;
+	int iResult;
 	char *sResult = "";
+
+
+#ifdef _DEBUG
+	WriteConsoleA(handle, "[DEBUG] BUILD\n", (DWORD)lstrlenA("[DEBUG] BUILD\n"), NULL, NULL);
+#endif
 
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
 		handleiResult(handle, "WSAStartup failed: ", iResult, sResult);
-		return 1;
+		return EXIT_FAILURE;
 	}
 
 #define DEFAULT_PORT "27015"
@@ -75,30 +84,90 @@ int main(void) {
 	}
 
 	SOCKET ListenSocket = INVALID_SOCKET;
-	
+
 	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
 	if (ListenSocket == INVALID_SOCKET) {
 		printErrorMessage("Error at socket():", WSAGetLastError());
 		freeaddrinfo(result);
 		WSACleanup();
-		return 1;
+		return EXIT_FAILURE;
 	}
 
 	iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
 	if (iResult == SOCKET_ERROR) {
-		printErrorMessage("bind failed with error:", WSAGetLastError);
+		printErrorMessage("bind failed with error:", WSAGetLastError());
 		freeaddrinfo(result);
 		closesocket(ListenSocket);
 		WSACleanup();
-		return 1;
+		return EXIT_FAILURE;
 	}
 
-#ifdef _DEBUG
-	WriteConsoleA(handle, "[DEBUG] BUILD\n", (DWORD)lstrlenA("[DEBUG] BUILD\n"), NULL, NULL);
-#endif
+	if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
+		printErrorMessage("listen failed with error:", WSAGetLastError());
+		closesocket(ListenSocket);
+		WSACleanup();
+		return EXIT_FAILURE;
+	}
 
-	return 0;
+	// CLIENT
+
+	SOCKET ClientSocket;
+	ClientSocket = INVALID_SOCKET;
+
+	ClientSocket = accept(ListenSocket, NULL, NULL);
+	if (ClientSocket == INVALID_SOCKET) {
+		printErrorMessage("accept failed:", WSAGetLastError());
+		closesocket(ListenSocket);
+		WSACleanup();
+		return EXIT_FAILURE;
+	}
+
+	closesocket(ListenSocket);
+
+#define BUFLEN 512
+
+	char recvbuf[BUFLEN];
+	int iSendResult;
+	char *sSendResult = "";
+	int recvbuflen = BUFLEN;
+
+	while (iResult > 0) {
+		iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+		if (iResult > 0) {
+			handleiResult(handle, "Bytes received: ", iResult, sResult);
+			// Echo the buffer back to the sender
+			iSendResult = send(ClientSocket, recvbuf, iResult, 0);
+			if (iSendResult == SOCKET_ERROR) {
+				printErrorMessage("send failed:", WSAGetLastError());
+				closesocket(ClientSocket);
+				WSACleanup();
+				return EXIT_FAILURE;
+			}
+			handleiResult(handle, "Bytes sent:", iSendResult, sSendResult);
+		}
+		else if (iResult == 0) {
+			WriteConsoleA(handle, "Connection Closing...\n", (DWORD)lstrlenA("Connection Closing...\n"), NULL, NULL);
+		}
+		else {
+			printErrorMessage("recv failed:", WSAGetLastError());
+			closesocket(ClientSocket);
+			WSACleanup();
+			return EXIT_FAILURE;
+		}
+	}
+
+	iResult = shutdown(ClientSocket, SD_SEND);
+	if (iResult = SOCKET_ERROR) {
+		printErrorMessage("shutdown failed:", WSAGetLastError());
+		closesocket(ClientSocket);
+		return EXIT_FAILURE;
+	}
+
+	closesocket(ClientSocket);
+	WSACleanup();
+
+	return EXIT_SUCCESS;
 }
 
 static void handleiResult(HANDLE handle, const char *const sValue, int iResult, char *sResult) {
