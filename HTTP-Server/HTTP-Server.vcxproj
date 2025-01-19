@@ -128,7 +128,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.c" />
+    <ClCompile Include="client.c" />
+    <ClCompile Include="server.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win32_stdint.h" />
